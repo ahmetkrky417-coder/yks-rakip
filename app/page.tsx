@@ -1,69 +1,186 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { calculateDetailedYksRank, YksResult } from "./data";
 
 export default function Home() {
+  const [field, setField] = useState<string>("Sayısal");
+  
+  // TYT Netleri
+  const [tytTurkce, setTytTurkce] = useState<number | "">(30);
+  const [tytSosyal, setTytSosyal] = useState<number | "">(12);
+  const [tytMat, setTytMat] = useState<number | "">(25);
+  const [tytFen, setTytFen] = useState<number | "">(10);
+
+  // AYT Netleri
+  const [ayt1, setAyt1] = useState<number | "">(25); // Örn: Matematik / Edebiyat
+  const [ayt2, setAyt2] = useState<number | "">(20); // Örn: Fen / Tarih-Coğrafya
+
+  const [results, setResults] = useState<YksResult[] | null>(null);
+
+  const handleCalculate = (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = calculateDetailedYksRank(
+      field,
+      Number(tytTurkce) || 0,
+      Number(tytSosyal) || 0,
+      Number(tytMat) || 0,
+      Number(tytFen) || 0,
+      Number(ayt1) || 0,
+      Number(ayt2) || 0
+    );
+    setResults(res);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-slate-900 text-white p-6 md:p-12 font-sans">
+      <div className="max-w-4xl mx-auto space-y-8">
+        
+        {/* Başlık */}
+        <header className="text-center space-y-2">
+          <h1 className="text-4xl font-extrabold text-blue-400">YKS Rakip & Branş Analiz Sistemi</h1>
+          <p className="text-slate-400">
+            Ders ders netlerinizi girin; geçmiş yılların yığılmalarına göre detaylı sıralamanızı ve hedef üniversiteleri görün.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        </header>
+
+        {/* Form Alanı */}
+        <form onSubmit={handleCalculate} className="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-6">
+          
+          {/* Alan Seçimi */}
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-slate-300">Puan Türü / Alanınız</label>
+            <select
+              value={field}
+              onChange={(e) => setField(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="Sayısal">Sayısal</option>
+              <option value="Eşit Ağırlık">Eşit Ağırlık</option>
+              <option value="Sözel">Sözel</option>
+              <option value="Dil">Dil</option>
+            </select>
+          </div>
+
+          {/* TYT Kısmı */}
+          <div>
+            <h2 className="text-lg font-bold text-blue-300 mb-3 border-b border-slate-700 pb-1">TYT Netleri</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Türkçe (Max 40)</label>
+                <input
+                  type="number" step="0.25" min="0" max="40"
+                  value={tytTurkce}
+                  onChange={(e) => setTytTurkce(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Sosyal (Max 20)</label>
+                <input
+                  type="number" step="0.25" min="0" max="20"
+                  value={tytSosyal}
+                  onChange={(e) => setTytSosyal(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Matematik (Max 40)</label>
+                <input
+                  type="number" step="0.25" min="0" max="40"
+                  value={tytMat}
+                  onChange={(e) => setTytMat(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Fen (Max 20)</label>
+                <input
+                  type="number" step="0.25" min="0" max="20"
+                  value={tytFen}
+                  onChange={(e) => setTytFen(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* AYT Kısmı */}
+          <div>
+            <h2 className="text-lg font-bold text-blue-300 mb-3 border-b border-slate-700 pb-1">AYT Netleri</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">
+                  {field === "Sayısal" ? "AYT Matematik (Max 40)" : field === "Eşit Ağırlık" ? "AYT Matematik (Max 40)" : field === "Sözel" ? "Türk Dili ve Edebiyatı (Max 24)" : "Yabancı Dil (Max 80)"}
+                </label>
+                <input
+                  type="number" step="0.25" min="0" max="80"
+                  value={ayt1}
+                  onChange={(e) => setAyt1(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">
+                  {field === "Sayısal" ? "AYT Fen Bilimleri (Max 40)" : field === "Eşit Ağırlık" ? "AYT Tarih-Coğrafya (Max 40)" : "Sosyal Bilimler-2 (Max 33)"}
+                </label>
+                <input
+                  type="number" step="0.25" min="0" max="80"
+                  value={ayt2}
+                  onChange={(e) => setAyt2(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-lg transition-colors shadow-lg shadow-blue-600/20 text-lg"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Detaylı Rakiplerimi ve Sıralamamı Hesapla
+          </button>
+        </form>
+
+        {/* Sonuç Kartları */}
+        {results && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-slate-200">Yıllara Göre Tahmini Sonuçlar</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {results.map((res) => (
+                <div key={res.year} className="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4">
+                  <div className="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <span className="text-lg font-bold text-blue-400">{res.year} Simülasyonu</span>
+                    <span className="text-xl font-extrabold text-green-400">
+                      ~{res.estimatedRank.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">Simüle Edilen Ham Puan: <span className="text-white font-bold">{res.score}</span></p>
+
+                  <div>
+                    <h3 className="text-xs font-semibold text-slate-400 mb-2">Hedeflenebilecek Bölümler:</h3>
+                    <ul className="space-y-2 text-xs">
+                      {res.targetUniversities.map((uni, idx) => (
+                        <li key={idx} className="flex justify-between bg-slate-900 p-2 rounded border border-slate-800">
+                          <span>{uni.university} ({uni.department})</span>
+                          <span className="text-slate-400">{uni.baseRank.toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </main>
   );
 }
